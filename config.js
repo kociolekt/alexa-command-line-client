@@ -2,11 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const homedir = require('os').homedir();
 const uuid = require('uuid/v4');
+const Moniker = require('moniker');
+const name = Moniker.generator([Moniker.adjective, Moniker.noun], {glue: ' '});
 
 const CONFIG_FILE_NAME = '.aclcrc';
 const CONFIG_FILE_PATH = path.resolve(homedir, CONFIG_FILE_NAME);
 
-module.exports = () => {
+module.exports = (() => {
     let configExists = false;
     let configIsFile = false;
     
@@ -26,14 +28,17 @@ module.exports = () => {
         throw new Error(`Alexa Command Line Client config file (${CONFIG_FILE_PATH}) cannot be directory.`);
     }
 
-    let currentUUID = null;
+    let config = null;
 
     if(configExists) {
-        currentUUID = fs.readFileSync(CONFIG_FILE_PATH, 'utf8');
+        config = JSON.parse(fs.readFileSync(CONFIG_FILE_PATH, 'utf8'));
     } else {
-        currentUUID = uuid();
-        fs.writeFileSync(CONFIG_FILE_PATH, currentUUID);
+        config = {
+            uuid: uuid(),
+            name: name.choose()
+        };
+        fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config));
     }
 
-    return currentUUID;
-};
+    return config;
+})();

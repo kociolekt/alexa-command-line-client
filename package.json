@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "caporal": "^1.1.0",
+    "moniker": "^0.1.2",
     "simple-eventer": "^2.1.1",
     "uuid": "^3.3.2",
     "ws": "^6.1.4"

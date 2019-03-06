@@ -1,9 +1,11 @@
+const readline = require('readline');
 const prog = require('caporal');
-const machineUUID = require('./machine-uuid');
-const Client = require('./clientLib');
+const config = require('./config');
+const Client = require('./client');
 
 const SERVER_ADDRESS = 'wss://wz0edt5qm7.execute-api.us-east-1.amazonaws.com/dev';
-const MACHINE_UUID = machineUUID();
+const MACHINE_UUID = config.uuid;
+const MACHINE_NAME = config.name;
 
 prog
     .version('1.0.0');
@@ -25,22 +27,54 @@ prog
 //    })
 
 prog
-    .command('echo', 'Bounce message off server')
-    .argument('<message>', 'Message to bounce')
-    .action((args, options, logger) => {
-      const client = new Client({
-        address: SERVER_ADDRESS
-      });
-      client.on('connect', () => {
-        client.actionEcho(args.message);
-      });
-    });
-
-prog
     .command('id', 'Show current machine id')
     .action((args, options, logger) => {
       logger.info(`Current Alexa Command Line Client ID: ${MACHINE_UUID}`);
     });
+
+prog
+    .command('name', 'Show current machine name')
+    .action((args, options, logger) => {
+      logger.info(`Current Alexa Command Line Client name: ${MACHINE_NAME}`);
+    });
+
+prog
+  .command('echo', 'Input message and bounce it off server')
+  .action((args, options, logger) => {
+    const client = new Client({
+      address: SERVER_ADDRESS
+    });
+    client.on('connect', () => {
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+      });
+      
+      console.log('Input message:');
+
+      rl.on('line', (input) => {
+        client.actionEcho(input);
+      });
+    });
+    client.on('action-echo', ({target: data}) => {
+      console.log(`SERVER >> ${data}`);
+    });
+  });
+
+prog
+  .command('pair', 'Pair this machine with alexa device')
+  .argument('<token>', 'Token required for pairing')
+  .action((args, options, logger) => {
+    const client = new Client({
+      address: SERVER_ADDRESS
+    });
+    client.on('connect', () => {
+      client.actionPair(MACHINE_NAME, MACHINE_UUID, args.token);
+    });
+    client.on('action-pair', (data) => {
+      console.log(data);
+    });
+  });
 
  /*
 prog
