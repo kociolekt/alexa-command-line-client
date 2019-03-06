@@ -49,7 +49,7 @@ prog
         input: process.stdin,
         output: process.stdout
       });
-      
+
       console.log('Input message:');
 
       rl.on('line', (input) => {
@@ -71,8 +71,9 @@ prog
     client.on('connect', () => {
       client.actionPair(MACHINE_NAME, MACHINE_UUID, args.token);
     });
-    client.on('action-pair', (data) => {
-      console.log(data);
+    client.on('action-pair', ({ target: message }) => {
+      console.log(message);
+      client.close();
     });
   });
 
@@ -89,13 +90,13 @@ prog
   .complete(function() {
     return ['store-1', 'store-2', 'store-3', 'store-4', 'store-5'];
   })
- 
+
   .argument('<account>', 'Which account id to use')
   // enable auto-completion for <account> argument using a Promise
   .complete(function() {
     return Promise.resolve(['account-1', 'account-2']);
   })
- 
+
   .option('-n, --number <num>', 'Number of pizza', prog.INT, 1)
   .option('-d, --discount <amount>', 'Discount offer', prog.FLOAT)
   .option('-p, --pay-by <mean>', 'Pay by option')
@@ -103,7 +104,7 @@ prog
   .complete(function() {
     return Promise.resolve(['cash', 'credit-card']);
   })
- 
+
   // -e | --extra will be auto-magicaly autocompleted by providing the user with 3 choices
   .option('-e, --extra <ingredients>', 'Add extra ingredients', ['pepperoni', 'onion', 'cheese'])
   .action(function(args, options, logger) {
@@ -111,7 +112,7 @@ prog
     logger.info("arguments: %j", args);
     logger.info("options: %j", options);
   })
- 
+
   // the "return" command
   .command('return', 'Return an order')
   .argument('<order-id>', 'Order id')
