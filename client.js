@@ -14,6 +14,14 @@ class Client extends SimpleEventer {
             throw new Error('address is required');
         }
 
+        if(!this.settings.uuid) {
+            throw new Error('uuid is required');
+        }
+
+        if(!this.settings.name) {
+            throw new Error('name is required');
+        }
+
         this.socket = null;
         this.isConnected = false;
 
@@ -33,6 +41,7 @@ class Client extends SimpleEventer {
     }
 
     onConnect() {
+        this.actionIntroduce(this.settings.uuid, this.settings.name);
         console.log('Client connected!');
         this.isConnected = true;
         this.fire('connect');
@@ -72,6 +81,23 @@ class Client extends SimpleEventer {
         }
     }
 
+    actionIntroduce(uuid, name) {
+        console.log(JSON.stringify({
+            action: 'introduce',
+            data: {
+                uuid,
+                name
+            }
+        }));
+        this.send(JSON.stringify({
+            action: 'introduce',
+            data: {
+                uuid,
+                name
+            }
+        }));
+    }
+
     actionEcho(messageString) {
         this.send(JSON.stringify({
             action: 'sendMessage',
@@ -96,6 +122,10 @@ class Client extends SimpleEventer {
                 token
             }
         }));
+    }
+
+    close() {
+        this.socket.close();
     }
 }
 

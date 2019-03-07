@@ -42,7 +42,9 @@ prog
   .command('echo', 'Input message and bounce it off server')
   .action((args, options, logger) => {
     const client = new Client({
-      address: SERVER_ADDRESS
+      address: SERVER_ADDRESS,
+      uuid: MACHINE_UUID,
+      name: MACHINE_NAME
     });
     client.on('connect', () => {
       const rl = readline.createInterface({
