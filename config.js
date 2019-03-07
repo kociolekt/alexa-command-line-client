@@ -11,7 +11,7 @@ const CONFIG_FILE_PATH = path.resolve(homedir, CONFIG_FILE_NAME);
 module.exports = (() => {
     let configExists = false;
     let configIsFile = false;
-    
+
     // Check for configuration file
     try {
         let stats = fs.lstatSync(CONFIG_FILE_PATH);

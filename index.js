@@ -7,6 +7,12 @@ const SERVER_ADDRESS = 'wss://wz0edt5qm7.execute-api.us-east-1.amazonaws.com/dev
 const MACHINE_UUID = config.uuid;
 const MACHINE_NAME = config.name;
 
+const clientConfig = {
+  address: SERVER_ADDRESS,
+  uuid: MACHINE_UUID,
+  name: MACHINE_NAME
+};
+
 prog
     .version('1.0.0');
 
@@ -41,11 +47,7 @@ prog
 prog
   .command('echo', 'Input message and bounce it off server')
   .action((args, options, logger) => {
-    const client = new Client({
-      address: SERVER_ADDRESS,
-      uuid: MACHINE_UUID,
-      name: MACHINE_NAME
-    });
+    const client = new Client(clientConfig);
     client.on('connect', () => {
       const rl = readline.createInterface({
         input: process.stdin,
@@ -67,9 +69,7 @@ prog
   .command('pair', 'Pair this machine with alexa device')
   .argument('<token>', 'Token required for pairing')
   .action((args, options, logger) => {
-    const client = new Client({
-      address: SERVER_ADDRESS
-    });
+    const client = new Client(clientConfig);
     client.on('connect', () => {
       client.actionPair(MACHINE_NAME, MACHINE_UUID, args.token);
     });
