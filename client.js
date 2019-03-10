@@ -2,7 +2,10 @@ const WebSocket = require('ws');
 let SimpleEventer = require('simple-eventer').default;
 
 const defaults = {
-    address: null
+    address: null,
+    uuid: null,
+    name: null,
+    commands: {}
 };
 
 class Client extends SimpleEventer {
@@ -20,6 +23,10 @@ class Client extends SimpleEventer {
 
         if(!this.settings.name) {
             throw new Error('name is required');
+        }
+
+        if(!this.settings.commands) {
+            throw new Error('commands are required');
         }
 
         this.socket = null;
@@ -41,9 +48,9 @@ class Client extends SimpleEventer {
     }
 
     onConnect() {
-        this.actionIntroduce(this.settings.uuid, this.settings.name);
         console.log('Client connected!');
         this.isConnected = true;
+        this.actionIntroduce(this.settings.name, this.settings.uuid, this.settings.commands);
         this.fire('connect');
     }
 
@@ -78,22 +85,27 @@ class Client extends SimpleEventer {
     send(message) {
         if(this.socket && this.isConnected) {
             this.socket.send(message);
+        } else {
+            throw new Error(`Client not connected (isConnected: ${isConnected}).`);
         }
     }
 
-    actionIntroduce(uuid, name) {
+    actionIntroduce(name, uuid, commands) {
+        let aliases = Object.keys(commands);
         console.log(JSON.stringify({
             action: 'introduce',
             data: {
+                name,
                 uuid,
-                name
+                aliases
             }
         }));
         this.send(JSON.stringify({
             action: 'introduce',
             data: {
+                name,
                 uuid,
-                name
+                aliases
             }
         }));
     }

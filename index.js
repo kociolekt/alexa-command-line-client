@@ -4,14 +4,9 @@ const config = require('./config');
 const Client = require('./client');
 
 const SERVER_ADDRESS = 'wss://wz0edt5qm7.execute-api.us-east-1.amazonaws.com/dev';
-const MACHINE_UUID = config.uuid;
-const MACHINE_NAME = config.name;
+const settings = config.get();
 
-const clientConfig = {
-  address: SERVER_ADDRESS,
-  uuid: MACHINE_UUID,
-  name: MACHINE_NAME
-};
+let clientConfig = Object.assign({}, { address: SERVER_ADDRESS }, settings);
 
 prog
     .version('1.0.0');
@@ -33,16 +28,16 @@ prog
 //    })
 
 prog
-    .command('id', 'Show current machine id')
-    .action((args, options, logger) => {
-      logger.info(`Current Alexa Command Line Client ID: ${MACHINE_UUID}`);
-    });
+  .command('name', 'Show current machine name')
+  .action((args, options, logger) => {
+    logger.info(`Current Alexa Command Line Client name: ${settings.name}`);
+  });
 
 prog
-    .command('name', 'Show current machine name')
-    .action((args, options, logger) => {
-      logger.info(`Current Alexa Command Line Client name: ${MACHINE_NAME}`);
-    });
+  .command('id', 'Show current machine id')
+  .action((args, options, logger) => {
+    logger.info(`Current Alexa Command Line Client ID: ${settings.uuid}`);
+  });
 
 prog
   .command('echo', 'Input message and bounce it off server')
@@ -71,12 +66,34 @@ prog
   .action((args, options, logger) => {
     const client = new Client(clientConfig);
     client.on('connect', () => {
-      client.actionPair(MACHINE_NAME, MACHINE_UUID, args.token);
+      client.actionPair(settings.name, settings.uuid, args.token);
     });
     client.on('action-pair', ({ target: message }) => {
       console.log(message);
       client.close();
     });
+  });
+
+prog
+  .command('add', 'Add alias and corresponding command.')
+  .argument('<alias>', 'alias for command')
+  .argument('<command>', 'command')
+  .action((args, options, logger) => {
+
+    if(!settings.commands) {
+      settings.commands = {};
+    }
+    
+    settings.commands[args.alias] = args.command;
+    config.set(settings);
+    clientConfig = Object.assign(clientConfig, settings);
+
+    const client = new Client(clientConfig);
+    client.on('connect', () => {
+      client.actionIntroduce(settings.name, settings.uuid, settings.commands);
+      client.close();
+    });
+
   });
 
  /*

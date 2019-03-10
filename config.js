@@ -8,37 +8,58 @@ const name = Moniker.generator([Moniker.adjective, Moniker.noun], {glue: ' '});
 const CONFIG_FILE_NAME = '.aclcrc';
 const CONFIG_FILE_PATH = path.resolve(homedir, CONFIG_FILE_NAME);
 
-module.exports = (() => {
-    let configExists = false;
-    let configIsFile = false;
+function check() {
+    let exists = false;
+    let isFile = false;
 
     // Check for configuration file
     try {
         let stats = fs.lstatSync(CONFIG_FILE_PATH);
-        configExists = true;
+        exists = true;
         if (!stats.isDirectory()) {
-            configIsFile = true;
+            isFile = true;
         }
     } catch (e) {
-        configExists = false;
+        exists = false;
     }
 
     // It'd be bad if config file'd be a directory
-    if(configExists && !configIsFile) {
+    if(exists && !isFile) {
         throw new Error(`Alexa Command Line Client config file (${CONFIG_FILE_PATH}) cannot be directory.`);
     }
 
+    return {
+        exists,
+        isFile
+    }
+}
+
+function get() {
+    const configCheck = check();
+
     let config = null;
 
-    if(configExists) {
+    if(configCheck.exists) {
         config = JSON.parse(fs.readFileSync(CONFIG_FILE_PATH, 'utf8'));
     } else {
         config = {
             uuid: uuid(),
-            name: name.choose()
+            name: name.choose(),
+            commands: {}
         };
         fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config));
     }
 
     return config;
-})();
+};
+
+function set(config) {
+    check();
+
+    fs.writeFileSync(CONFIG_FILE_PATH, JSON.stringify(config));
+}
+
+module.exports = {
+    get,
+    set
+};
