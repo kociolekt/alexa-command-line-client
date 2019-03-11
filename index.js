@@ -13,6 +13,8 @@ const clientConfig = {
   name: MACHINE_NAME
 };
 
+const client = new Client(clientConfig);
+
 prog
     .version('1.0.0');
 
@@ -47,7 +49,7 @@ prog
 prog
   .command('echo', 'Input message and bounce it off server')
   .action((args, options, logger) => {
-    const client = new Client(clientConfig);
+    client.connect();
     client.on('connect', () => {
       const rl = readline.createInterface({
         input: process.stdin,
@@ -57,7 +59,11 @@ prog
       console.log('Input message:');
 
       rl.on('line', (input) => {
-        client.actionEcho(input);
+        if(input === 'exit') {
+          client.close();
+        } else {
+          client.actionEcho(input);
+        }
       });
     });
     client.on('action-echo', ({target: data}) => {
@@ -69,7 +75,7 @@ prog
   .command('pair', 'Pair this machine with alexa device')
   .argument('<token>', 'Token required for pairing')
   .action((args, options, logger) => {
-    const client = new Client(clientConfig);
+    client.connect();
     client.on('connect', () => {
       client.actionPair(MACHINE_NAME, MACHINE_UUID, args.token);
     });
@@ -136,3 +142,35 @@ prog
   });
  */
 prog.parse(process.argv);
+
+
+// Handling client close
+//process.stdin.resume(); //so the program will not close instantly
+
+function exitHandler(options, exitCode) {
+    if (options.cleanup) {
+      client.close();
+      console.log('clean');
+    }
+    if (exitCode || exitCode === 0) {
+      client.close();
+      console.log(exitCode);
+    }
+    if (options.exit) {
+      client.close();
+      process.exit();
+    }
+}
+
+//do something when app is closing
+process.on('exit', exitHandler.bind(null, {cleanup:true}));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
+process.on('SIGUSR2', exitHandler.bind(null, {exit:true}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {exit:true}));

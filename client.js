@@ -24,12 +24,13 @@ class Client extends SimpleEventer {
 
         this.socket = null;
         this.isConnected = false;
-
-        this.init();
     }
 
-    init() {
-        this.initSocket();
+    connect() {
+        if(!this.isConnected) {
+            this.isConnected = true;
+            this.initSocket();
+        }
     }
 
     initSocket() {
@@ -41,10 +42,12 @@ class Client extends SimpleEventer {
     }
 
     onConnect() {
-        this.actionIntroduce(this.settings.uuid, this.settings.name);
         console.log('Client connected!');
         this.isConnected = true;
+        this.actionIntroduce(this.settings.name, this.settings.uuid);
         this.fire('connect');
+        //setTimeout(() => {
+        //}, 0);
     }
 
     onError(error) {
@@ -81,19 +84,19 @@ class Client extends SimpleEventer {
         }
     }
 
-    actionIntroduce(uuid, name) {
+    actionIntroduce(name, uuid) {
         console.log(JSON.stringify({
             action: 'introduce',
             data: {
-                uuid,
-                name
+                name,
+                uuid
             }
         }));
         this.send(JSON.stringify({
             action: 'introduce',
             data: {
-                uuid,
-                name
+                name,
+                uuid
             }
         }));
     }
@@ -125,7 +128,9 @@ class Client extends SimpleEventer {
     }
 
     close() {
-        this.socket.close();
+        if(this.isConnected && this.socket) {
+            this.socket.close();
+        }
     }
 }
 
