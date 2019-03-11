@@ -89,15 +89,17 @@ prog
     if(!settings.commands) {
       settings.commands = {};
     }
-    
+
     settings.commands[args.alias] = args.command;
     config.set(settings);
     clientConfig = Object.assign(clientConfig, settings);
 
-    const client = new Client(clientConfig);
+    client.connect();
     client.on('connect', () => {
-      client.actionIntroduce(settings.name, settings.uuid, settings.commands);
-      client.close();
+      //client.actionIntroduce(settings.name, settings.uuid, settings.commands);
+      setTimeout(() => {
+        client.close();
+      }, 100);
     });
 
   });
