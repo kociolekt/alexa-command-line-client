@@ -104,6 +104,19 @@ prog
 
   });
 
+  prog
+  .command('daemon', 'Run in daemon mode listening for incoming commands')
+  .action((args, options, logger) => {
+    client.connect();
+    client.on('connect', () => {
+      console.log('On your command, sir!')
+      client.on('action-command', ({ target: command }) => {
+        console.log(command);
+      });
+    });
+
+  });
+
  /*
 prog
   .version('1.0.0')
