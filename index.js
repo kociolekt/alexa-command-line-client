@@ -1,3 +1,4 @@
+const exec = require('child_process').exec;
 const readline = require('readline');
 const prog = require('caporal');
 const config = require('./config');
@@ -9,6 +10,35 @@ const settings = config.get();
 let clientConfig = Object.assign({}, { address: SERVER_ADDRESS }, settings);
 
 const client = new Client(clientConfig);
+
+function runner(command) {
+  return new Promise((resolve) => {
+    let output = [];
+
+    output.push(`START ${command}`);
+
+    try {
+      exec(command, (e, stdout, stderr)=> {
+          if (e instanceof Error) {
+            output.push('ERROR:');
+            output.push(e);
+          }
+          output.push('STDOUT:');
+          output.push(stdout);
+          output.push('STDERR:');
+          output.push(stderr);
+          output.push(`FINISH ${command}`);
+          resolve(output.join('\n'));
+      }).on('exit', (code) => {
+        output.push(`EXIT CODE: ${code}`);
+      });
+    } catch(e) {
+      output.push('FATAL ERROR');
+      output.push(e);
+      resolve(output.join('\n'));
+    }
+  });
+}
 
 prog
     .version('1.0.0');
@@ -104,14 +134,49 @@ prog
 
   });
 
-  prog
+prog
+  .command('remove', 'Removes alias and corresponding command.')
+  .argument('<alias>', 'alias for command')
+  .action((args, options, logger) => {
+
+    if(!settings.commands) {
+      settings.commands = {};
+    }
+
+    let command = settings.commands[args.alias];
+
+    if(command) {
+      delete settings.commands[args.alias];
+    }
+
+    config.set(settings);
+    clientConfig = Object.assign(clientConfig, settings);
+
+    client.connect();
+    client.on('connect', () => {
+      //client.actionIntroduce(settings.name, settings.uuid, settings.commands);
+      setTimeout(() => {
+        client.close();
+      }, 100);
+    });
+
+  });
+
+prog
   .command('daemon', 'Run in daemon mode listening for incoming commands')
   .action((args, options, logger) => {
     client.connect();
     client.on('connect', () => {
       console.log('On your command, sir!')
-      client.on('action-command', ({ target: command }) => {
-        console.log(command);
+      client.on('action-command', ({ target: alias }) => {
+        let command = settings.commands[alias];
+
+        if(command) {
+          runner(command).then(console.log);
+        } else {
+          console.log(`No such command defined (${alias})`);
+        }
+
       });
     });
 
