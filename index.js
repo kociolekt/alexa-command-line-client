@@ -9,7 +9,7 @@ const settings = config.get();
 
 let clientConfig = Object.assign({}, { address: SERVER_ADDRESS }, settings);
 
-const client = new Client(clientConfig);
+let client = new Client(clientConfig);
 
 function runner(command) {
   return new Promise((resolve) => {
@@ -61,7 +61,25 @@ prog
 
 prog
   .command('name', 'Show current machine name')
+  .argument('[name]', 'New name')
   .action((args, options, logger) => {
+    if (args.name) {
+      if(!settings.name) {
+        settings.name = {};
+      }
+  
+      settings.name = args.name;
+      config.set(settings);
+      clientConfig = Object.assign(clientConfig, settings);
+      client = new Client(clientConfig);
+      client.connect();
+      client.on('connect', () => {
+        //client.actionIntroduce(settings.name, settings.uuid, settings.commands);
+        setTimeout(() => {
+          client.close();
+        }, 100);
+      });
+    }
     logger.info(`Current Alexa Command Line Client name: ${settings.name}`);
   });
 

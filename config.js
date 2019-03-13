@@ -3,7 +3,7 @@ const path = require('path');
 const homedir = require('os').homedir();
 const uuid = require('uuid/v4');
 const Moniker = require('moniker');
-const name = Moniker.generator([Moniker.adjective, Moniker.noun], {glue: ' '});
+const name = Moniker.generator([Moniker.noun], {maxSize: 5, glue: ' '});
 
 const CONFIG_FILE_NAME = '.aclcrc';
 const CONFIG_FILE_PATH = path.resolve(homedir, CONFIG_FILE_NAME);
