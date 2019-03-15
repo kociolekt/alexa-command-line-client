@@ -16,6 +16,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": "github:kociolekt/cli-alexa-skill",
   "author": "Tomasz Kociołek",
   "license": "ISC",
   "dependencies": {
