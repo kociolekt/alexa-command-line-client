@@ -1,12 +1,22 @@
 {
-  "name": "clientcli",
+  "name": "alexa-command-line-client",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Client for Alexa Command Line Skill. Allows skill to run commands on local machine.",
+  "keywords": [
+    "alexa",
+    "skill",
+    "command line",
+    "terminal",
+    "client"
+  ],
+  "main": "./lib/client.js",
+  "bin": {
+      "aclc": "./bin/index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Tomasz Kociołek",
   "license": "ISC",
   "dependencies": {
     "caporal": "^1.1.0",
