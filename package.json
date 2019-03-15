@@ -1,6 +1,6 @@
 {
   "name": "alexa-command-line-client",
-  "version": "1.1.1",
+  "version": "1.0.1",
   "description": "Client for Alexa Command Line Skill. Allows skill to run commands on local machine.",
   "keywords": [
     "alexa",
